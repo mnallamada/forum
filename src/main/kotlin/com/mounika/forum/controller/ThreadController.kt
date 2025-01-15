@@ -1,9 +1,9 @@
 package com.mounika.forum.controller
 
-import com.mounika.forum.dto.CommentDto
-import com.mounika.forum.dto.ThreadDto
 import com.mounika.forum.dto.ThreadRequest
 import com.mounika.forum.repository.ThreadRepository
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -17,29 +17,34 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/threads")
+@Tag(name = "Threads", description = "Manage threads")
 class ThreadController(
     private val threadRepository: ThreadRepository
 ) {
 
     @GetMapping
+    @Operation(summary = "Get all threads", description = "Returns all threads")
     fun getAllThreads(): ResponseEntity<List<com.mounika.forum.dto.ThreadDto>> {
         val threads = threadRepository.getAllThreads()
         return ResponseEntity.ok(threads)
     }
 
     @GetMapping("/category-count")
+    @Operation(summary = "Get category count", description = "Returns number of threads for each category")
     fun getCategoryCount(): ResponseEntity<Map<String, Long>> {
         val categoryCount = threadRepository.getCategoryCount()
         return ResponseEntity.ok(categoryCount)
     }
 
     @GetMapping("/category/{category}")
+    @Operation(summary = "Get threads by category", description = "Returns all categories for a given category")
     fun getThreadsByCategory(@PathVariable category: String): ResponseEntity<List<com.mounika.forum.dto.ThreadDto>> {
         val threads = threadRepository.getThreadsByCategory(category)
         return ResponseEntity.ok(threads)
     }
 
     @PostMapping("/create")
+    @Operation(summary = "Create thread", description = "Creates a new thread")
     fun createThread(@RequestBody request: ThreadRequest): ResponseEntity<com.mounika.forum.dto.ThreadDto> {
         val currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
         val threadId = UUID.randomUUID().toString()
@@ -61,6 +66,7 @@ class ThreadController(
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get thread", description = "Gets a thread by ID")
     fun getThread(@PathVariable id: String): ResponseEntity<com.mounika.forum.dto.ThreadDto> {
         val thread = threadRepository.getThreadById(id) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(thread)
@@ -68,6 +74,7 @@ class ThreadController(
 
 
     @PostMapping("/{id}/add-comment")
+    @Operation(summary = "Add comment to thread", description = "Adds a comment to the thread")
     fun addCommentToThread(@PathVariable id: String, @RequestBody comment: com.mounika.forum.dto.CommentDto): ResponseEntity<Void> {
         threadRepository.getThreadById(id) ?: return ResponseEntity.notFound().build()
         threadRepository.addCommentToThread(id, comment)
@@ -75,6 +82,7 @@ class ThreadController(
     }
 
     @PostMapping("/{id}/increment-view")
+    @Operation(summary = "Increment view count", description = "Increments view count of a thread")
     fun incrementView(@PathVariable id: String): ResponseEntity<Void> {
         threadRepository.incrementViewCount(id)
         return ResponseEntity.ok().build()
